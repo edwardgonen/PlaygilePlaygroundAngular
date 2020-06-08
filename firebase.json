@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "dist/PlaygilePlaygroundAngular",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

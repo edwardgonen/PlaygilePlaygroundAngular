@@ -1,0 +1,91 @@
+<h2>User Story Readiness Assessment</h2>
+
+
+
+
+<mat-card>
+    <mat-grid-list cols="10" rowHeight="2:2">
+      <mat-grid-tile colspan='2'>
+      The result of the User Story's implementation can be demonstrated
+      </mat-grid-tile>
+      <mat-grid-tile colspan='3' fxFlex>
+          <mat-form-field>
+              <mat-label>Choose an option</mat-label>
+              <mat-select placeholder="Demonstrable" [(ngModel)]="selectedDemonstrableOption" (ngModelChange)="onDemonstrableSelectionChanged()">
+                <mat-option *ngFor="let demonstrableOption of demonstrableOptions" [value]="demonstrableOption.value">
+                  {{ demonstrableOption.viewValue }}
+                </mat-option>
+              </mat-select>
+              <!--mat-hint>(ngModelChange) event</mat-hint-->
+          </mat-form-field>
+      </mat-grid-tile>    
+    </mat-grid-list>
+    <mat-grid-list cols="10" rowHeight="2:2">
+        <mat-grid-tile colspan='2'>
+        Clear Acceptance Criteria are provided
+        </mat-grid-tile>
+        <mat-grid-tile colspan='3' fxFlex>
+            <mat-form-field>
+                <mat-label>Choose an option</mat-label>
+                <mat-select placeholder="AcceptanceCriteria" [(ngModel)]="selectedAcceptanceCriteriaOption" (ngModelChange)="onAcceptanceCriteriaSelectionChanged()">
+                  <mat-option *ngFor="let acceptanceCriteriaOption of acceptanceCriteriaOptions" [value]="acceptanceCriteriaOption.value">
+                    {{ acceptanceCriteriaOption.viewValue }}
+                  </mat-option>
+                </mat-select>
+                <!--mat-hint>(ngModelChange) event</mat-hint-->
+            </mat-form-field>
+        </mat-grid-tile>    
+    </mat-grid-list>
+    <mat-grid-list cols="10" rowHeight="2:2">
+        <mat-grid-tile colspan='2'>
+        Collateral Materials (Art, Economy, Analytics, etc.) availability
+        </mat-grid-tile>
+        <mat-grid-tile colspan='3' fxFlex>
+            <mat-form-field>
+                <mat-label>Choose an option</mat-label>
+                <mat-select placeholder="CollateralMaterials" [(ngModel)]="selectedCollateralMaterialsOption" (ngModelChange)="onCollateralMaterialsSelectionChanged()">
+                  <mat-option *ngFor="let collateralMaterialsOption of collateralMaterialsOptions" [value]="collateralMaterialsOption.value">
+                    {{ collateralMaterialsOption.viewValue }}
+                  </mat-option>
+                </mat-select>
+                <!--mat-hint>(ngModelChange) event</mat-hint-->
+            </mat-form-field>
+        </mat-grid-tile>    
+    </mat-grid-list>
+    <mat-grid-list cols="10" rowHeight="2:2">
+        <mat-grid-tile colspan='2'>
+        The team is able to estimate User Story in story points
+        </mat-grid-tile>
+        <mat-grid-tile colspan='3' fxFlex>
+            <mat-form-field>
+                <mat-label>Choose an option</mat-label>
+                <mat-select placeholder="StorySizing" [(ngModel)]="selectedStorySizingOption" (ngModelChange)="onStorySizingSelectionChanged()">
+                  <mat-option *ngFor="let storySizingOption of storySizingOptions" [value]="storySizingOption.value">
+                    {{ storySizingOption.viewValue }}
+                  </mat-option>
+                </mat-select>
+                <!--mat-hint>(ngModelChange) event</mat-hint-->
+            </mat-form-field>
+        </mat-grid-tile>    
+    </mat-grid-list>
+    <mat-grid-list cols="10" rowHeight="2:2">
+        <mat-grid-tile colspan='2'>
+        Can be splitted into sub-tasks not longer than 1 day
+        </mat-grid-tile>
+        <mat-grid-tile colspan='3' fxFlex>
+            <mat-form-field>
+                <mat-label>Choose an option</mat-label>
+                <mat-select placeholder="Splittable" [(ngModel)]="selectedSplittableOption" (ngModelChange)="onSplittableSelectionChanged()">
+                  <mat-option *ngFor="let splittableOption of splittableOptions" [value]="splittableOption.value">
+                    {{ splittableOption.viewValue }}
+                  </mat-option>
+                </mat-select>
+                <!--mat-hint>(ngModelChange) event</mat-hint-->
+            </mat-form-field>
+        </mat-grid-tile>    
+        <mat-grid-tile colspan='4' fxFlex>
+            <mat-label style="font-size:30px"><span>Score: </span>{{us_assessment.score}}</mat-label>
+        </mat-grid-tile>
+    </mat-grid-list>    
+    <mat-divider></mat-divider>
+  </mat-card>
