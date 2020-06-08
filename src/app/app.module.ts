@@ -16,6 +16,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatGridListModule } from '@angular/material/grid-list'
 import { MatDividerModule } from '@angular/material/divider'
 import { MatCardModule } from '@angular/material/card';
+import { Ng2GoogleChartsModule, GoogleChartsSettings } from 'ng2-google-charts';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { MatCardModule } from '@angular/material/card';
     MatCheckboxModule,
     MatGridListModule,
     MatDividerModule,
-    MatCardModule
+    MatCardModule,
+    Ng2GoogleChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

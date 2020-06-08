@@ -1,6 +1,5 @@
 import { Component, OnInit, ElementRef } from '@angular/core';
-import { FormControl, FormGroup, FormBuilder} from '@angular/forms';
-import { UserStory } from '../UserStory';
+import { UserStory } from './UserStory';
 
 
 
