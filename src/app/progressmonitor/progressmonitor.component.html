@@ -1,2 +1,20 @@
-{{progress_monitor}}
-<h2>User Story Readiness Assessment</h2>
+<h2>Project Progress Monitor</h2>
+
+
+<form class="project-progress-input-form">
+    <mat-form-field class="project-progress-inputs-width">
+        <mat-label>Project Progress Data</mat-label>
+        <textarea matInput [formControl]="progressData" rows="10" cols="20" placeholder="Copy here your data in CSV format"></textarea>
+    </mat-form-field>
+    <mat-form-field class="project-progress-inputs-width">
+      <mat-label>Team's Velocity</mat-label>
+      <input matInput [formControl]="TeamVelocity" placeholder="Ex. 50">
+    </mat-form-field> 
+    <mat-form-field class="project-progress-inputs-width">
+        <mat-label>Sprint Length (days)</mat-label>
+        <input matInput [formControl]="SprintLength" placeholder="Ex. 14">
+    </mat-form-field>
+    <button mat-raised-button id="recalculate" (click)="recalculateClick(null)">Recalculate</button>
+    <google-chart [data]="lineChart"></google-chart>
+</form>
+

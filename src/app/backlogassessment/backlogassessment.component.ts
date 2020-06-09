@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { GoogleChartInterface } from 'ng2-google-charts';
 
 @Component({
@@ -26,6 +26,8 @@ export class BacklogassessmentComponent implements OnInit {
     options: {
       'title': 'Daily Backlog Readiness',
       'legend': 'none',
+      'width': '700',
+      'height': '350',
       'hAxis' : {'title' : 'Days to Sprint End', 'minValue' : '1', 'maxValue' : '4'},
       'vAxis' : {'title' : 'Daily Readiness %', 'minValue' : '0', 'maxValue' : '100'}
     }

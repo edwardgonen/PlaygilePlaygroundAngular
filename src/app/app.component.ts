@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'Playgile Playground Compound';
+  title = 'Playgile Playground Compound by Ed Gonen, 2020';
 }
