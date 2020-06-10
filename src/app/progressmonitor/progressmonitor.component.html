@@ -1,20 +1,38 @@
-<h2>Project Progress Monitor</h2>
+<br>
+    <mat-grid-list class="project-progress-input-form" cols="4" rowHeight="15">
+        <mat-grid-tile colspan='1'>
+            <mat-label>Project Progress Data</mat-label>
+        </mat-grid-tile>
+        <mat-grid-tile colspan='2'>
+            <mat-label>Project Progress Prediction</mat-label>
+        </mat-grid-tile>
+        <mat-grid-tile colspan='1'>
+            <mat-label>Completion</mat-label>
+        </mat-grid-tile>
+    </mat-grid-list>
+    <mat-grid-list class="project-progress-input-form" cols="4" rowHeight="350px">
+        <mat-grid-tile colspan='1'>
+            <textarea matInput [formControl]="progressData" rows="10" cols="20" placeholder="Copy here your data in CSV format like below &#13;&#10;6/1/2020,400&#13;&#10;6\15\2020,350&#13;&#10;etc."></textarea>
+        </mat-grid-tile>
+        <mat-grid-tile colspan='2'>
+            <google-chart [data]="lineChart"></google-chart>
+        </mat-grid-tile>
+        <mat-grid-tile colspan='1'>
+            <mat-label>Ideal last sprint end: {{IdealProjectEnd}}<br>Predicted last sprint end: {{PredictedProjectEnd}}<br> 
+            </mat-label>
+        </mat-grid-tile>
+    </mat-grid-list>
 
 
-<form class="project-progress-input-form">
-    <mat-form-field class="project-progress-inputs-width">
-        <mat-label>Project Progress Data</mat-label>
-        <textarea matInput [formControl]="progressData" rows="10" cols="20" placeholder="Copy here your data in CSV format"></textarea>
-    </mat-form-field>
-    <mat-form-field class="project-progress-inputs-width">
-      <mat-label>Team's Velocity</mat-label>
-      <input matInput [formControl]="TeamVelocity" placeholder="Ex. 50">
-    </mat-form-field> 
-    <mat-form-field class="project-progress-inputs-width">
-        <mat-label>Sprint Length (days)</mat-label>
-        <input matInput [formControl]="SprintLength" placeholder="Ex. 14">
-    </mat-form-field>
-    <button mat-raised-button id="recalculate" (click)="recalculateClick(null)">Recalculate</button>
-    <google-chart [data]="lineChart"></google-chart>
-</form>
+    <table cellspacing="0"><tr>
+        <td><mat-form-field >
+            <mat-label>Team's Velocity</mat-label>
+            <input matInput [formControl]="TeamVelocity" type="number" placeholder="Ex. 50">
+        </mat-form-field></td>
+        <td><mat-form-field>
+            <mat-label>Sprint Length</mat-label>
+            <input matInput [formControl]="SprintLength" type="number" placeholder="Ex. 14">
+        </mat-form-field></td>
+        <button mat-raised-button id="recalculate" (click)="recalculateClick(null)">Recalculate</button>
+    </tr></table>
 

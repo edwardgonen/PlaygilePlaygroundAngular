@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GoogleChartInterface } from 'ng2-google-charts';
 import { FormControl } from '@angular/forms';
-import { GoogleChartsDataTable } from 'ng2-google-charts/lib/google-charts-datatable';
 
 @Component({
   selector: 'app-progressmonitor',
@@ -12,6 +11,7 @@ import { GoogleChartsDataTable } from 'ng2-google-charts/lib/google-charts-datat
 /*
 6/1/2020,350
 6/15/2020,320
+etc.
 */
 
 export class ProgressmonitorComponent implements OnInit {
@@ -25,21 +25,22 @@ export class ProgressmonitorComponent implements OnInit {
       ['6/15/2020', 300, 320]
     ],
     options: {
-      'title': 'Project Progress Monitor',
       //'legend': 'none',
-      'legend' : {'position' : 'top', 'alignment': 'start' },
+      'legend' : {'position' : 'right', 'alignment' : 'center'},
       'width': '700',
       'height': '350',
       'hAxis' : {'title' : 'Date'},
-      'vAxis' : {'title' : 'Remaining Story Points', 'minValue' : '0'}
+      'vAxis' : {'title' : 'Remaining Story Points', 'minValue' : '0'},
+      'lineWidth' : '4',
     }
   };
 
   SprintLength = new FormControl('');
   TeamVelocity = new FormControl('');
-
-
   progressData = new FormControl('');
+  IdealProjectEnd : string;
+  PredictedProjectEnd : string;
+  
 
 
   idealEstimationsStoryPoints : number[] = new Array();
@@ -107,6 +108,13 @@ export class ProgressmonitorComponent implements OnInit {
       }
       this.lineChart.dataTable = newDataTable;
 
+      //the real sprint end date is 1 day before the next sprint starts. So subsctact 1 for the right end date
+      var tmpDate1 : Date;
+      tmpDate1 = this.addDays(new Date(this.idealEstimatinsDates[this.idealEstimatinsDates.length - 1]), -1);
+      this.IdealProjectEnd = tmpDate1.toLocaleDateString();
+      var tmpDate2 : Date;
+      tmpDate2 = this.addDays(this.loadedEstimatinsDates[this.loadedEstimatinsDates.length - 1], -1);
+      this.PredictedProjectEnd = tmpDate2.toLocaleDateString();
       //force a redraw
       ccComponent.draw();
   };
@@ -204,7 +212,7 @@ export class ProgressmonitorComponent implements OnInit {
 
 
   constructor() {
-    this.progressData.setValue(this.TestProgressData);
+    //this.progressData.setValue(this.TestProgressData);
     this.SprintLength.setValue('14');
     this.TeamVelocity.setValue('50');
    }

@@ -1,16 +1,23 @@
-<h1>{{title}}</h1>
-<br>
-<a href="#userstoryassessment">User Story Readiness Assessment</a>
-<br>
-<a href="#backlogassessment">Backlog Readiness Assessment</a>
-<br>
-<a href="#progressmonitor">Project Progress Monitor</a>
-<br>
-<a id="userstoryassessment"></a>
-<app-userstoryassessment></app-userstoryassessment>
-<br>
-<a id="backlogassessment"></a>
-<app-backlogassessment></app-backlogassessment>
-<br>
-<a id="progressmonitor"></a>
-<app-progressmonitor></app-progressmonitor>
+<head>
+  <style>
+    div {
+      margin-top: 5px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<div>
+  <h1>{{title}}</h1>
+
+  <mat-tab-group>
+      <mat-tab label="User Story Readiness">
+        <app-userstoryassessment></app-userstoryassessment>
+      </mat-tab>
+      <mat-tab label="Sprint Backlog Readiness">
+        <app-backlogassessment></app-backlogassessment>
+      </mat-tab>
+      <mat-tab label="Project Progress">
+          <app-progressmonitor></app-progressmonitor>
+        </mat-tab>
+  </mat-tab-group>
+</div>

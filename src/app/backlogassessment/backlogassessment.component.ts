@@ -24,7 +24,6 @@ export class BacklogassessmentComponent implements OnInit {
     ],
     //firstRowIsData: true,
     options: {
-      'title': 'Daily Backlog Readiness',
       'legend': 'none',
       'width': '700',
       'height': '350',

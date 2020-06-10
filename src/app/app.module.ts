@@ -18,7 +18,9 @@ import { MatDividerModule } from '@angular/material/divider'
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTabsModule } from '@angular/material/tabs';
 import { Ng2GoogleChartsModule, GoogleChartsSettings } from 'ng2-google-charts';
+import { MatDialogModule } from "@angular/material/dialog";
 
 @NgModule({
   declarations: [
@@ -43,6 +45,8 @@ import { Ng2GoogleChartsModule, GoogleChartsSettings } from 'ng2-google-charts';
     MatCardModule,
     MatInputModule,
     MatButtonModule,
+    MatTabsModule,
+    MatDialogModule,
     Ng2GoogleChartsModule
   ],
   providers: [],
