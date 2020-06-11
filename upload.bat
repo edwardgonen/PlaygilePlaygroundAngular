@@ -1,2 +1,2 @@
-ng build --output-hashing=all
-call firebase deploy
+call ng build --output-hashing=all --prod
+firebase deploy

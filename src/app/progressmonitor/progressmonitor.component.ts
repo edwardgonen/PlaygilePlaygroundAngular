@@ -16,13 +16,21 @@ etc.
 
 export class ProgressmonitorComponent implements OnInit {
 
-  TestProgressData : string = "6/1/2020,350\n6/15/2020,320";
+  TestProgressData : string = `REPLACE THIS WHOLE TEXT WITH YOUR REAL DATA
+  in the form of:
+  6/1/2020,350
+  6/15/2020,320
+  etc.
+  
+  The date above is when you checked the remaining stories in the Backlog.
+  The number after comma is the remaining amount of story points in the backlog at that date.
+  Then press the Recalculate button above.
+  You may enter as many strings as you want.`;
   public lineChart: GoogleChartInterface = {
     chartType: 'LineChart',
     dataTable: [
       ['Date', 'Ideal', 'Predicted'],
-      ['6/1/2020', 350, 350],
-      ['6/15/2020', 300, 320]
+      ['6/1/2020', 0, 0]
     ],
     options: {
       //'legend': 'none',
@@ -41,21 +49,21 @@ export class ProgressmonitorComponent implements OnInit {
   IdealProjectEnd : string;
   PredictedProjectEnd : string;
   
-
-
+  projectStartSpecified : boolean = false;
+  projectInitialEstimationSpecified : boolean = false;
   idealEstimationsStoryPoints : number[] = new Array();
   idealEstimatinsDates : Date[] = new Array();
 
-  loadedEstimationsStoryPoints : number[] = new Array();
-  loadedEstimatinsDates : Date[] = new Array();
+  progressEstimationsStoryPoints : number[] = new Array();
+  progressEstimatinsDates : Date[] = new Array();
 
   recalculateClick(event) {
 
       this.idealEstimationsStoryPoints  = new Array();
       this.idealEstimatinsDates = new Array();
     
-      this.loadedEstimationsStoryPoints = new Array();
-      this.loadedEstimatinsDates = new Array();
+      this.progressEstimationsStoryPoints = new Array();
+      this.progressEstimatinsDates = new Array();
       if (!this.progressData.value) 
       {
         alert ("Please enter or paste the Project progress data in the CSV format");
@@ -93,9 +101,9 @@ export class ProgressmonitorComponent implements OnInit {
       //which data set is longer?
 
       var xAxisSet : Date[];
-      if (this.loadedEstimatinsDates.length >= this.idealEstimatinsDates.length)
+      if (this.progressEstimatinsDates.length >= this.idealEstimatinsDates.length)
       {
-        xAxisSet = this.loadedEstimatinsDates;
+        xAxisSet = this.progressEstimatinsDates;
       }
       else
       {
@@ -104,17 +112,16 @@ export class ProgressmonitorComponent implements OnInit {
 
       for (var i = 0; i < xAxisSet.length; i++)
       {
-        newDataTable.push([xAxisSet[i].toLocaleDateString(), this.idealEstimationsStoryPoints[i], this.loadedEstimationsStoryPoints[i]]);
+        newDataTable.push([xAxisSet[i].toLocaleDateString(), this.idealEstimationsStoryPoints[i], this.progressEstimationsStoryPoints[i]]);
       }
-      this.lineChart.dataTable = newDataTable;
+      this.lineChart.dataTable = newDataTable; //set new table
 
-      //the real sprint end date is 1 day before the next sprint starts. So subsctact 1 for the right end date
-      var tmpDate1 : Date;
-      tmpDate1 = this.addDays(new Date(this.idealEstimatinsDates[this.idealEstimatinsDates.length - 1]), -1);
-      this.IdealProjectEnd = tmpDate1.toLocaleDateString();
-      var tmpDate2 : Date;
-      tmpDate2 = this.addDays(this.loadedEstimatinsDates[this.loadedEstimatinsDates.length - 1], -1);
-      this.PredictedProjectEnd = tmpDate2.toLocaleDateString();
+
+      var idealProjectEnd : Date = this.FindProjectEnd(this.idealEstimatinsDates, this.idealEstimationsStoryPoints);
+      var predictedProjectEnd : Date  = this.FindProjectEnd(this.progressEstimatinsDates, this.progressEstimationsStoryPoints);
+      this.IdealProjectEnd = idealProjectEnd.toLocaleDateString();
+      this.PredictedProjectEnd = predictedProjectEnd.toLocaleDateString();
+
       //force a redraw
       ccComponent.draw();
   };
@@ -125,11 +132,15 @@ export class ProgressmonitorComponent implements OnInit {
     return Math.ceil(diff / (1000 * 3600 * 24)); 
   }
   addDays(date: Date, days: number): Date {
-    var tmpDate : Date = date;
+    var tmpDate : Date = new Date(date);
     tmpDate.setDate(tmpDate.getDate() + days);
     return tmpDate;
   }
-
+  CalculateIdealEstimationByDate(projectStartDate : Date, currentDate : Date, initialProjectEstimation : number, dailyVelocity : number) : number
+  {
+      var distanceDays : number = this.daysBetweenDates(currentDate, projectStartDate);
+      return (initialProjectEstimation - distanceDays * dailyVelocity);
+  }
   parseProgressData(content : string)
   {
     try
@@ -161,8 +172,8 @@ export class ProgressmonitorComponent implements OnInit {
           return;
         }
         var tmpDate : Date = new Date(currentline[0]);
-        this.loadedEstimationsStoryPoints.push(tmpRemaining);
-        this.loadedEstimatinsDates.push(new Date(tmpDate));
+        this.progressEstimationsStoryPoints.push(tmpRemaining);
+        this.progressEstimatinsDates.push(new Date(tmpDate));
       } //for on lines
     }
     catch (Error)
@@ -173,51 +184,114 @@ export class ProgressmonitorComponent implements OnInit {
 
   calculateAllDataIdealAndPrediction(teamVelocity : number, sprintLength : number)
   {
-    var lastDateTime : Date = new Date(this.loadedEstimatinsDates[this.loadedEstimatinsDates.length - 1]);
-    var startProjectDateTime : Date = new Date(this.loadedEstimatinsDates[0]);
-    var daysLeftSinceLastUpdateTillEndOfSprint = this.daysBetweenDates(lastDateTime, startProjectDateTime) % sprintLength;
-    var recentSprintEnd : Date = new Date(this.addDays(lastDateTime, sprintLength - daysLeftSinceLastUpdateTillEndOfSprint));
-    var remainingWorkInRecentSprint : number =
-        teamVelocity * ((sprintLength - daysLeftSinceLastUpdateTillEndOfSprint) / sprintLength);
-    var momentaryEstimation : number = this.loadedEstimationsStoryPoints[this.loadedEstimationsStoryPoints.length - 1] - remainingWorkInRecentSprint;
+    var startProjectDateTime : Date;
+    var initialProjectEstimation : number;
+    if (this.projectStartSpecified)
+    {
+        //startProjectDateTime = specifiedProjectDate;
+    }
+    else
+        startProjectDateTime = new Date(this.progressEstimatinsDates[0]);
 
-    //first let's set the predicted point to the end of recent sprint
-    this.loadedEstimatinsDates.push(new Date(recentSprintEnd));
-    this.loadedEstimationsStoryPoints.push(momentaryEstimation);
+    if (this.projectInitialEstimationSpecified)
+    {
+        //initialProjectEstimation = initialEstimationSpecified;
+    }
+    else
+        initialProjectEstimation = this.progressEstimationsStoryPoints[0];
+
+    var dailyVelocity : number = teamVelocity / sprintLength;
+    var lastDateTimeInProjectData : Date = this.progressEstimatinsDates[this.progressEstimatinsDates.length - 1];
+    var tmpPairDate : Date;
+    var tmpPairValue : number;
+
+    var daysLeftSinceLastUpdateTillEndOfSprint : number  = sprintLength - 1 - 
+        this.daysBetweenDates(lastDateTimeInProjectData, startProjectDateTime) % sprintLength;
+    var closestSprintEnd : Date = this.addDays(lastDateTimeInProjectData,daysLeftSinceLastUpdateTillEndOfSprint);
+
+    if (daysLeftSinceLastUpdateTillEndOfSprint > 0)
+    {
+        //add predicted closest sprint end
+        var remainingWorkInRecentSprint : number = dailyVelocity * daysLeftSinceLastUpdateTillEndOfSprint;
+        var estimationHowWeFinishCurrentSprint : number = 
+          this.progressEstimationsStoryPoints[this.progressEstimationsStoryPoints.length - 1] - remainingWorkInRecentSprint;
+        tmpPairDate = new Date(closestSprintEnd);
+        tmpPairValue = estimationHowWeFinishCurrentSprint;
+        this.progressEstimatinsDates.push(tmpPairDate);
+        this.progressEstimationsStoryPoints.push(tmpPairValue);
+    }
+
+    //to this point the predicted array contains real data from the past.
+    //The dates of those estimations may not be on the sprint end
+    //so we need to add those points to the ideal line to make both lines parallel in sense of dates
+    //it is easy since the ideal is linear y = initial estimation -(DailyVelocity) * NumberOfDaysSinceProjectStarts
+    tmpPairDate = new Date(startProjectDateTime);
+    tmpPairValue = initialProjectEstimation;
+    this.idealEstimatinsDates.push(tmpPairDate);
+    this.idealEstimationsStoryPoints.push(tmpPairValue);
+
+    for (var i = 1; i < this.progressEstimationsStoryPoints.length; i++)
+    {
+        //calculate this point distance from the project start
+        var tmpEstimation : number = this.CalculateIdealEstimationByDate(this.addDays(startProjectDateTime, -1), this.progressEstimatinsDates[i], initialProjectEstimation, dailyVelocity);
+        tmpPairDate = new Date(this.progressEstimatinsDates[i]);
+        tmpPairValue = initialProjectEstimation;
+        this.idealEstimatinsDates.push(tmpPairDate);
+        this.idealEstimationsStoryPoints.push(tmpEstimation);
+    }
 
     //calculate prediction
-    var pointDate : Date = recentSprintEnd;
+    //first let's set the predicted point to the end of recent sprint
+    var lastSprintEnd : Date = new Date(closestSprintEnd);
+    var endSprintExpectation : number;
+    var lastFullSprintEndValue : number = this.progressEstimationsStoryPoints[this.progressEstimationsStoryPoints.length - 1];
+    var pointDate : Date = new Date(lastSprintEnd);
+    var continueAddingIdealPoints : boolean = true;
     do
     {
-        pointDate = new Date(this.addDays(pointDate, sprintLength));
-        momentaryEstimation -= teamVelocity;
-        this.loadedEstimatinsDates.push(new Date(pointDate));
-        this.loadedEstimationsStoryPoints.push(Math.max(momentaryEstimation, 0));
-    } while (momentaryEstimation > 0);
+      pointDate = this.addDays(pointDate, sprintLength);
+      endSprintExpectation = this.CalculateIdealEstimationByDate(lastSprintEnd, pointDate, lastFullSprintEndValue, dailyVelocity);
+      tmpPairDate = new Date(pointDate);
+      tmpPairValue = Math.max(endSprintExpectation, 0);
+      this.progressEstimatinsDates.push(tmpPairDate);
+      this.progressEstimationsStoryPoints.push(tmpPairValue);
+        
+      var idealEstimation : number = this.CalculateIdealEstimationByDate(this.addDays(startProjectDateTime, -1), pointDate, initialProjectEstimation, dailyVelocity);
+      if (continueAddingIdealPoints)
+      {
 
-    //calculate ideal
+        tmpPairDate = new Date(pointDate);
+        tmpPairValue = Math.max(idealEstimation, 0);
+        this.idealEstimatinsDates.push(tmpPairDate);
+        this.idealEstimationsStoryPoints.push(tmpPairValue);
+        if (idealEstimation <= 0) continueAddingIdealPoints = false;
+      }
+    } while (endSprintExpectation > 0);
+  }
 
-    momentaryEstimation = this.loadedEstimationsStoryPoints[0];
-    pointDate = new Date(this.loadedEstimatinsDates[0]);
-    this.idealEstimationsStoryPoints.push(momentaryEstimation);
-    this.idealEstimatinsDates.push(new Date(pointDate));
-    do
+  FindProjectEnd(inputDatesArray : Date[], inputValuesArray : number[]) : Date
+  {
+    //end of the project for each set is the first date where the estimation is 0
+    var predictedProjectEnd : Date  = null;
+    //end of the project for each set is the first date where the estimation is 0
+    for (var i = 0; i < inputValuesArray.length; i++)
     {
-        momentaryEstimation -= teamVelocity;
-        pointDate = new Date(this.addDays(pointDate, sprintLength));         
-        this.idealEstimationsStoryPoints.push(Math.max(momentaryEstimation, 0));         
-        this.idealEstimatinsDates.push(new Date(pointDate));
-    } while (momentaryEstimation > 0);
+        if (inputValuesArray[i] <= 0)
+        {
+            predictedProjectEnd = new Date(inputDatesArray[i]);
+            break;
+        }
+    }
+    return predictedProjectEnd;
   }
 
 
   constructor() {
-    //this.progressData.setValue(this.TestProgressData);
+    this.progressData.setValue(this.TestProgressData);
     this.SprintLength.setValue('14');
     this.TeamVelocity.setValue('50');
    }
 
   ngOnInit(): void {
   }
-
 }
