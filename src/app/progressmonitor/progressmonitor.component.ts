@@ -16,13 +16,20 @@ etc.
 
 export class ProgressmonitorComponent implements OnInit {
 
-  TestProgressData : string = "6/1/2020,350\n6/15/2020,320";
+  TestProgressData : string = `You may edit this window and enter your real data in the form of:
+  6/1/2020,350
+  6/15/2020,320
+  etc.
+  
+  The date above is when you checked the remaining stories in the Backlog.
+  The number after comma is the remaining amount of story points in the backlog at that date.
+  Then press the Recalculate button above.
+  You may enter as many strings as you want.`;
   public lineChart: GoogleChartInterface = {
     chartType: 'LineChart',
     dataTable: [
       ['Date', 'Ideal', 'Predicted'],
-      ['6/1/2020', 350, 350],
-      ['6/15/2020', 300, 320]
+      ['6/1/2020', 0, 0]
     ],
     options: {
       //'legend': 'none',
@@ -41,7 +48,6 @@ export class ProgressmonitorComponent implements OnInit {
   IdealProjectEnd : string;
   PredictedProjectEnd : string;
   
-
 
   idealEstimationsStoryPoints : number[] = new Array();
   idealEstimatinsDates : Date[] = new Array();
@@ -212,12 +218,13 @@ export class ProgressmonitorComponent implements OnInit {
 
 
   constructor() {
-    //this.progressData.setValue(this.TestProgressData);
+    this.progressData.setValue(this.TestProgressData);
     this.SprintLength.setValue('14');
     this.TeamVelocity.setValue('50');
    }
 
   ngOnInit(): void {
+
   }
 
 }
