@@ -2,6 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { GoogleChartInterface } from 'ng2-google-charts';
 import { FormControl } from '@angular/forms';
 
+
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialog } from '../shared/confirm-dialog/confirm-dialog.component';
+import { AlertDialogComponent } from '../shared/alert-dialog/alert-dialog.component';
+
 @Component({
   selector: 'app-progressmonitor',
   templateUrl: './progressmonitor.component.html',
@@ -56,9 +61,9 @@ export class ProgressmonitorComponent implements OnInit {
 
   progressEstimationsStoryPoints : number[] = new Array();
   progressEstimatinsDates : Date[] = new Array();
+  
 
   recalculateClick(event) {
-
       this.idealEstimationsStoryPoints  = new Array();
       this.idealEstimatinsDates = new Array();
     
@@ -66,7 +71,7 @@ export class ProgressmonitorComponent implements OnInit {
       this.progressEstimatinsDates = new Array();
       if (!this.progressData.value) 
       {
-        alert ("Please enter or paste the Project progress data in the CSV format");
+        this.openAlertDialog("Please enter or paste the Project progress data in the CSV format");
         return;
       };
 
@@ -75,13 +80,13 @@ export class ProgressmonitorComponent implements OnInit {
       var teamVelocity = parseInt(this.TeamVelocity.value);
       if (Number.isNaN(teamVelocity) || teamVelocity <= 0) 
       {
-        alert('Wrong Team Velocity ' + this.TeamVelocity.value);
+        this.openAlertDialog('Wrong Team Velocity ' + this.TeamVelocity.value);
         return;
       }
       var sprintLength = parseInt(this.SprintLength.value);
       if (Number.isNaN(sprintLength) || sprintLength <= 0) 
       {
-        alert('Wrong Sprint length ' + this.SprintLength.value);
+        this.openAlertDialog('Wrong Sprint length ' + this.SprintLength.value);
         return;
       }
       
@@ -149,7 +154,7 @@ export class ProgressmonitorComponent implements OnInit {
       var lines = content.split("\n");
       if (lines.length <= 0)
       {
-        alert("Missing progress data. Please verify");
+        this.openAlertDialog("Missing progress data. Please verify");
         return;
       }
 
@@ -163,12 +168,12 @@ export class ProgressmonitorComponent implements OnInit {
         var tmpRemaining = parseFloat(currentline[1]);
         if (Number.isNaN(tmpRemaining)) 
         {
-          alert('Wrong remaining amount ' + currentline[1]);
+          this.openAlertDialog('Wrong remaining amount ' + currentline[1]);
           return;
         }
         if (Number.isNaN(Date.parse(currentline[0])))
         {
-          alert('Wrong date ' + currentline[0]);
+          this.openAlertDialog('Wrong date ' + currentline[0]);
           return;
         }
         var tmpDate : Date = new Date(currentline[0]);
@@ -178,7 +183,7 @@ export class ProgressmonitorComponent implements OnInit {
     }
     catch (Error)
     {
-      alert("Parsing progress data problem " + Error);
+      this.openAlertDialog("Parsing progress data problem " + Error);
     };
   }
 
@@ -285,8 +290,40 @@ export class ProgressmonitorComponent implements OnInit {
     return predictedProjectEnd;
   }
 
+  ////////////// shared dialog related stuff////////////////////
+  openDialog(message : string, okbuttontext : string, cancelbuttontext : string) {
+    const dialogRef = this.dialog.open(ConfirmationDialog,{
+      data:{
+        message: message,
+        buttonText: {
+          ok: okbuttontext,
+          cancel: cancelbuttontext
+        }
+      }
+    });
 
-  constructor() {
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        const a = document.createElement('a');
+        a.click();
+        a.remove();
+      }
+    });
+  }
+
+  openAlertDialog(message : string) {
+    const dialogRef = this.dialog.open(AlertDialogComponent,{
+      data:{
+        message: message,
+        buttonText: {
+          cancel: 'Done'
+        }
+      },
+    });
+  }
+  //////////////////////////////////
+
+  constructor(private dialog: MatDialog) {
     this.progressData.setValue(this.TestProgressData);
     this.SprintLength.setValue('14');
     this.TeamVelocity.setValue('50');

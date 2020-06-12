@@ -22,12 +22,16 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { Ng2GoogleChartsModule, GoogleChartsSettings } from 'ng2-google-charts';
 import { MatDialogModule } from "@angular/material/dialog";
 
+import { ConfirmationDialog } from './shared/confirm-dialog/confirm-dialog.component';
+import { AlertDialogComponent } from './shared/alert-dialog/alert-dialog.component';
+
 @NgModule({
   declarations: [
     AppComponent,
     UserstoryassessmentComponent,
     BacklogassessmentComponent,
-    ProgressmonitorComponent
+    ProgressmonitorComponent,
+    ConfirmationDialog, AlertDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -49,6 +53,7 @@ import { MatDialogModule } from "@angular/material/dialog";
     MatDialogModule,
     Ng2GoogleChartsModule
   ],
+  entryComponents: [ConfirmationDialog, AlertDialogComponent],
   providers: [],
   bootstrap: [AppComponent]
 })
