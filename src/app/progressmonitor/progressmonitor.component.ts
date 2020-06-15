@@ -35,7 +35,7 @@ export class ProgressmonitorComponent implements OnInit {
     chartType: 'LineChart',
     dataTable: [
       ['Date', 'Ideal', 'Predicted'],
-      ['6/1/2020', 0, 0]
+      [new Date('6/1/2020'), 0, 0]
     ],
     options: {
       //'legend': 'none',
@@ -45,6 +45,14 @@ export class ProgressmonitorComponent implements OnInit {
       'hAxis' : {'title' : 'Date'},
       'vAxis' : {'title' : 'Remaining Story Points', 'minValue' : '0'},
       'lineWidth' : '4',
+      scales: {
+        xAxes: [{
+            type: 'time',
+            time: {
+                unit: 'day',
+            }
+        }]
+    }
     }
   };
 
@@ -88,6 +96,11 @@ export class ProgressmonitorComponent implements OnInit {
       {
         this.openAlertDialog('Wrong Sprint length ' + this.SprintLength.value);
         return;
+      }
+
+      if (sprintLength != 14) //not regular sprint
+      {
+        this.openAlertDialog("You have specified spring length of " + sprintLength + " days which is irregular. Don't forget to update the team velocity accordingly.");
       }
       
 
@@ -313,9 +326,7 @@ export class ProgressmonitorComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        const a = document.createElement('a');
-        a.click();
-        a.remove();
+
       }
     });
   }
