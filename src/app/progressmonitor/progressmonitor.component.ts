@@ -42,7 +42,11 @@ export class ProgressmonitorComponent implements OnInit {
       'legend' : {'position' : 'right', 'alignment' : 'center'},
       'width': '700',
       'height': '350',
-      'hAxis' : {'title' : 'Date'},
+      'hAxis' : 
+        {
+          'title' : 'Date', 
+          'format' : 'M/d/yy'
+        },
       'vAxis' : {'title' : 'Remaining Story Points', 'minValue' : '0'},
       'lineWidth' : '4',
       scales: {
@@ -115,7 +119,7 @@ export class ProgressmonitorComponent implements OnInit {
       let ccWrapper = ccComponent.wrapper;
 
       //let's show it on the chart
-      var newDataTable : (string | number)[][] =   [['Date', 'Ideal', 'Predicted']];
+      var newDataTable : (any)[][] =   [['Date', 'Ideal', 'Predicted']];
       //which data set is longer?
 
       var xAxisSet : Date[];
@@ -130,7 +134,7 @@ export class ProgressmonitorComponent implements OnInit {
 
       for (var i = 0; i < xAxisSet.length; i++)
       {
-        newDataTable.push([xAxisSet[i].toLocaleDateString(), this.idealEstimationsStoryPoints[i], this.progressEstimationsStoryPoints[i]]);
+        newDataTable.push([xAxisSet[i], this.idealEstimationsStoryPoints[i], this.progressEstimationsStoryPoints[i]]);
       }
       this.lineChart.dataTable = newDataTable; //set new table
 
