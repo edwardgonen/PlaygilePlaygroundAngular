@@ -68,19 +68,16 @@ export class ProgressmonitorComponent implements OnInit {
   
   projectStartSpecified : boolean = false;
   projectInitialEstimationSpecified : boolean = false;
-  idealEstimationsStoryPoints : number[] = new Array();
-  idealEstimatinsDates : Date[] = new Array();
 
-  progressEstimationsStoryPoints : number[] = new Array();
-  progressEstimatinsDates : Date[] = new Array();
+
+  idealEstimations : { date: Date, value: number}[] = new Array();
+
+  progressEstimations : { date: Date, value: number}[] = new Array();
   
 
   recalculateClick(event) {
-      this.idealEstimationsStoryPoints  = new Array();
-      this.idealEstimatinsDates = new Array();
-    
-      this.progressEstimationsStoryPoints = new Array();
-      this.progressEstimatinsDates = new Array();
+      this.idealEstimations  = new Array();  
+      this.progressEstimations = new Array();
       if (!this.progressData.value) 
       {
         this.openAlertDialog("Please enter or paste the Project progress data in the CSV format");
@@ -122,25 +119,38 @@ export class ProgressmonitorComponent implements OnInit {
       var newDataTable : (any)[][] =   [['Date', 'Ideal', 'Predicted']];
       //which data set is longer?
 
-      var xAxisSet : Date[];
-      if (this.progressEstimatinsDates.length >= this.idealEstimatinsDates.length)
+      var xAxisSet : Date[] = new Array();
+      if (this.progressEstimations.length >= this.idealEstimations.length)
       {
-        xAxisSet = this.progressEstimatinsDates;
+        for (var i = 0; i < this.progressEstimations.length; i++)
+          xAxisSet.push(this.progressEstimations[i].date);
       }
       else
       {
-        xAxisSet = this.idealEstimatinsDates;
+        for (var i = 0; i < this.idealEstimations.length; i++)
+          xAxisSet.push(this.idealEstimations[i].date);
       }
 
+      var tmpValueIdeal, tmpValueProgress;
       for (var i = 0; i < xAxisSet.length; i++)
       {
-        newDataTable.push([xAxisSet[i], this.idealEstimationsStoryPoints[i], this.progressEstimationsStoryPoints[i]]);
+        if (i < this.idealEstimations.length)
+          tmpValueIdeal = this.idealEstimations[i].value;
+        else
+          tmpValueIdeal = null;
+        
+        if (i < this.progressEstimations.length)
+          tmpValueProgress = this.progressEstimations[i].value;
+        else
+          tmpValueProgress = null;  
+
+        newDataTable.push([xAxisSet[i], tmpValueIdeal, tmpValueProgress]);
       }
       this.lineChart.dataTable = newDataTable; //set new table
 
 
-      var idealProjectEnd : Date = this.FindProjectEnd(this.idealEstimatinsDates, this.idealEstimationsStoryPoints);
-      var predictedProjectEnd : Date  = this.FindProjectEnd(this.progressEstimatinsDates, this.progressEstimationsStoryPoints);
+      var idealProjectEnd : Date = this.FindProjectEnd(this.idealEstimations);
+      var predictedProjectEnd : Date  = this.FindProjectEnd(this.progressEstimations);
       this.IdealProjectEnd = idealProjectEnd.toLocaleDateString();
       this.PredictedProjectEnd = predictedProjectEnd.toLocaleDateString();
 
@@ -194,9 +204,10 @@ export class ProgressmonitorComponent implements OnInit {
           return;
         }
         var tmpDate : Date = new Date(currentline[0]);
-        this.progressEstimationsStoryPoints.push(tmpRemaining);
-        this.progressEstimatinsDates.push(new Date(tmpDate));
+        this.progressEstimations.push({ "date": tmpDate, "value": tmpRemaining });
       } //for on lines
+      //need to sort the progress in ascending order of date
+      this.progressEstimations.sort((a, b) => (a.date > b.date) ? 1 : -1)
     }
     catch (Error)
     {
@@ -213,17 +224,17 @@ export class ProgressmonitorComponent implements OnInit {
         //startProjectDateTime = specifiedProjectDate;
     }
     else
-        startProjectDateTime = new Date(this.progressEstimatinsDates[0]);
+        startProjectDateTime = new Date(this.progressEstimations[0].date);
 
     if (this.projectInitialEstimationSpecified)
     {
         //initialProjectEstimation = initialEstimationSpecified;
     }
     else
-        initialProjectEstimation = this.progressEstimationsStoryPoints[0];
+        initialProjectEstimation = this.progressEstimations[0].value;
 
     var dailyVelocity : number = teamVelocity / sprintLength;
-    var lastDateTimeInProjectData : Date = this.progressEstimatinsDates[this.progressEstimatinsDates.length - 1];
+    var lastDateTimeInProjectData : Date = this.progressEstimations[this.progressEstimations.length - 1].date;
     var tmpPairDate : Date;
     var tmpPairValue : number;
 
@@ -236,13 +247,12 @@ export class ProgressmonitorComponent implements OnInit {
         //add predicted closest sprint end
         var remainingWorkInRecentSprint : number = dailyVelocity * daysLeftSinceLastUpdateTillEndOfSprint;
         var estimationHowWeFinishCurrentSprint : number = 
-          this.progressEstimationsStoryPoints[this.progressEstimationsStoryPoints.length - 1] - remainingWorkInRecentSprint;
+          this.progressEstimations[this.progressEstimations.length - 1].value - remainingWorkInRecentSprint;
         if (estimationHowWeFinishCurrentSprint > 0)
         {
           tmpPairDate = new Date(closestSprintEnd);
           tmpPairValue = estimationHowWeFinishCurrentSprint;
-          this.progressEstimatinsDates.push(tmpPairDate);
-          this.progressEstimationsStoryPoints.push(tmpPairValue);
+          this.progressEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
         }
     }
 
@@ -252,17 +262,15 @@ export class ProgressmonitorComponent implements OnInit {
     //it is easy since the ideal is linear y = initial estimation -(DailyVelocity) * NumberOfDaysSinceProjectStarts
     tmpPairDate = new Date(startProjectDateTime);
     tmpPairValue = initialProjectEstimation;
-    this.idealEstimatinsDates.push(tmpPairDate);
-    this.idealEstimationsStoryPoints.push(tmpPairValue);
+    this.idealEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
+    
 
-    for (var i = 1; i < this.progressEstimationsStoryPoints.length; i++)
+    for (var i = 1; i < this.progressEstimations.length; i++)
     {
         //calculate this point distance from the project start
-        var tmpEstimation : number = this.CalculateIdealEstimationByDate(this.addDays(startProjectDateTime, -1), this.progressEstimatinsDates[i], initialProjectEstimation, dailyVelocity);
-        tmpPairDate = new Date(this.progressEstimatinsDates[i]);
-        tmpPairValue = initialProjectEstimation;
-        this.idealEstimatinsDates.push(tmpPairDate);
-        this.idealEstimationsStoryPoints.push(tmpEstimation);
+        tmpPairValue = this.CalculateIdealEstimationByDate(this.addDays(startProjectDateTime, -1), this.progressEstimations[i].date, initialProjectEstimation, dailyVelocity);
+        tmpPairDate = new Date(this.progressEstimations[i].date);
+        this.idealEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
     }
 
     //calculate prediction
@@ -270,7 +278,7 @@ export class ProgressmonitorComponent implements OnInit {
     var lastSprintEnd : Date = new Date(closestSprintEnd);
     var endSprintExpectation : number;
     var idealEstimation : number;
-    var lastFullSprintEndValue : number = this.progressEstimationsStoryPoints[this.progressEstimationsStoryPoints.length - 1];
+    var lastFullSprintEndValue : number = this.progressEstimations[this.progressEstimations.length - 1].value;
     var pointDate : Date = new Date(lastSprintEnd);
     var continueAddingIdealPoints : boolean = true;
     var contunueAddingProgressPoints : boolean = true;
@@ -283,8 +291,7 @@ export class ProgressmonitorComponent implements OnInit {
       {
         tmpPairDate = new Date(pointDate);
         tmpPairValue = Math.max(endSprintExpectation, 0);
-        this.progressEstimatinsDates.push(tmpPairDate);
-        this.progressEstimationsStoryPoints.push(tmpPairValue);
+        this.progressEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
         if (endSprintExpectation <= 0) contunueAddingProgressPoints = false;
       }
         
@@ -293,23 +300,22 @@ export class ProgressmonitorComponent implements OnInit {
       {
         tmpPairDate = new Date(pointDate);
         tmpPairValue = Math.max(idealEstimation, 0);
-        this.idealEstimatinsDates.push(tmpPairDate);
-        this.idealEstimationsStoryPoints.push(tmpPairValue);
+        this.idealEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
         if (idealEstimation <= 0) continueAddingIdealPoints = false;
       }
     } while (endSprintExpectation > 0 || idealEstimation > 0);
   }
 
-  FindProjectEnd(inputDatesArray : Date[], inputValuesArray : number[]) : Date
+  FindProjectEnd(inputArray : { date: Date, value: number}[]) : Date
   {
     //end of the project for each set is the first date where the estimation is 0
     var predictedProjectEnd : Date  = null;
     //end of the project for each set is the first date where the estimation is 0
-    for (var i = 0; i < inputValuesArray.length; i++)
+    for (var i = 0; i < inputArray.length; i++)
     {
-        if (inputValuesArray[i] <= 0)
+        if (inputArray[i].value <= 0)
         {
-            predictedProjectEnd = new Date(inputDatesArray[i]);
+            predictedProjectEnd = new Date(inputArray[i].date);
             break;
         }
     }
