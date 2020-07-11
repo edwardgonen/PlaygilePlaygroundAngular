@@ -171,7 +171,7 @@ export class ProgressmonitorComponent implements OnInit {
   CalculateIdealEstimationByDate(projectStartDate : Date, currentDate : Date, initialProjectEstimation : number, dailyVelocity : number) : number
   {
       var distanceDays : number = this.daysBetweenDates(currentDate, projectStartDate);
-      return (initialProjectEstimation - distanceDays * dailyVelocity);
+      return Math.max(initialProjectEstimation - distanceDays * dailyVelocity, 0);
   }
   parseProgressData(content : string)
   {
@@ -241,19 +241,20 @@ export class ProgressmonitorComponent implements OnInit {
     var daysLeftSinceLastUpdateTillEndOfSprint : number  = sprintLength - 1 - 
         this.daysBetweenDates(lastDateTimeInProjectData, startProjectDateTime) % sprintLength;
     var closestSprintEnd : Date = this.addDays(lastDateTimeInProjectData,daysLeftSinceLastUpdateTillEndOfSprint);
-
+    
+    var endSprintExpectation : number;
+    var idealEstimation : number;
+    
     if (daysLeftSinceLastUpdateTillEndOfSprint > 0)
     {
         //add predicted closest sprint end
         var remainingWorkInRecentSprint : number = dailyVelocity * daysLeftSinceLastUpdateTillEndOfSprint;
+
         var estimationHowWeFinishCurrentSprint : number = 
-          this.progressEstimations[this.progressEstimations.length - 1].value - remainingWorkInRecentSprint;
-        if (estimationHowWeFinishCurrentSprint > 0)
-        {
-          tmpPairDate = new Date(closestSprintEnd);
-          tmpPairValue = estimationHowWeFinishCurrentSprint;
-          this.progressEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
-        }
+          Math.max(this.progressEstimations[this.progressEstimations.length - 1].value - remainingWorkInRecentSprint, 0);
+        tmpPairDate = new Date(closestSprintEnd);
+        endSprintExpectation = estimationHowWeFinishCurrentSprint;
+        this.progressEstimations.push({ "date": tmpPairDate, "value": endSprintExpectation });
     }
 
     //to this point the predicted array contains real data from the past.
@@ -268,21 +269,21 @@ export class ProgressmonitorComponent implements OnInit {
     for (var i = 1; i < this.progressEstimations.length; i++)
     {
         //calculate this point distance from the project start
-        tmpPairValue = this.CalculateIdealEstimationByDate(this.addDays(startProjectDateTime, -1), this.progressEstimations[i].date, initialProjectEstimation, dailyVelocity);
+        idealEstimation = this.CalculateIdealEstimationByDate(startProjectDateTime, this.progressEstimations[i].date, initialProjectEstimation, dailyVelocity);
         tmpPairDate = new Date(this.progressEstimations[i].date);
-        this.idealEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
+        this.idealEstimations.push({ "date": tmpPairDate, "value": idealEstimation });
+        if (idealEstimation <= 0) break; //finished so no more loops
     }
 
     //calculate prediction
     //first let's set the predicted point to the end of recent sprint
     var lastSprintEnd : Date = new Date(closestSprintEnd);
-    var endSprintExpectation : number;
-    var idealEstimation : number;
+
     var lastFullSprintEndValue : number = this.progressEstimations[this.progressEstimations.length - 1].value;
     var pointDate : Date = new Date(lastSprintEnd);
     var continueAddingIdealPoints : boolean = true;
     var contunueAddingProgressPoints : boolean = true;
-    do
+    while (endSprintExpectation > 0 || idealEstimation > 0)
     {
       pointDate = this.addDays(pointDate, sprintLength);
 
@@ -295,7 +296,7 @@ export class ProgressmonitorComponent implements OnInit {
         if (endSprintExpectation <= 0) contunueAddingProgressPoints = false;
       }
         
-      idealEstimation = this.CalculateIdealEstimationByDate(this.addDays(startProjectDateTime, -1), pointDate, initialProjectEstimation, dailyVelocity);
+      idealEstimation = this.CalculateIdealEstimationByDate(startProjectDateTime, pointDate, initialProjectEstimation, dailyVelocity);
       if (continueAddingIdealPoints)
       {
         tmpPairDate = new Date(pointDate);
@@ -303,7 +304,7 @@ export class ProgressmonitorComponent implements OnInit {
         this.idealEstimations.push({ "date": tmpPairDate, "value": tmpPairValue });
         if (idealEstimation <= 0) continueAddingIdealPoints = false;
       }
-    } while (endSprintExpectation > 0 || idealEstimation > 0);
+    };
   }
 
   FindProjectEnd(inputArray : { date: Date, value: number}[]) : Date
